@@ -5,11 +5,11 @@ Get your shoppe coins easily and automatedly!:money_mouth_face::money_mouth_face
 ### Setup
 1. Install selenium (check [Package Requirements](#package-requirements))
 2. Put [ChromeDriver](https://chromedriver.chromium.org/downloads) under the home path (e.g., C:\Users\User)
-3. Run `get-shopee-coins-setup.py` and complete login process
-4. Close `get-shopee-coins-setup.py` when you see '_Setup completed successfully_'
+3. Run `source/get-shopee-coins-setup.py` and complete login process
+4. Close `source/get-shopee-coins-setup.py` when you see '_Setup completed successfully_'
 ### Get coins! (With 2 options)
-1. Run `get-shopee-coins.pyw` to get coins
-2. Use Windows Task Scheduler to run `get-shopee-coins.pyw` periodically
+1. Run `source/get-shopee-coins.pyw` to get coins
+2. Use Windows Task Scheduler to run `source/get-shopee-coins.pyw` periodically
     <img src="./media/task-scheduler-1.png" width="500">
     <img src="./media/task-scheduler-2.png" width="500">
 
