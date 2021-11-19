@@ -1,0 +1,1 @@
+pip install selenium==4.0.0
