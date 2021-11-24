@@ -43,12 +43,11 @@ try:
         file.seek(0)
         file.writelines(content)
     # end with-as
-    
-    print('Setup completed successfully')
 except TimeoutException:
     print('Timeout.')
 except Exception as e:
     print(f'{e.__class__.__name__}: {e.args[0]}')
 finally:
     driver.quit()
+    print('Setup completed successfully')
     os.system('pause')
