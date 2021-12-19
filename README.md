@@ -1,19 +1,30 @@
 # :moneybag:Get Shopee Coins:moneybag:
-Get your shoppe coins easily and automatedly!:money_mouth_face::money_mouth_face::money_mouth_face:
+Get your shoppe coins easily and automatically!:money_mouth_face::money_mouth_face::money_mouth_face:
 
 # Usage
 ### Setup
-1. Install selenium (Using [requirements.bat](./requirements.bat) or *pip*)
-2. Put [chromedriver.exe](https://chromedriver.chromium.org/downloads) under the home path (e.g., C:\Users\User)
-3. Run `source/get-shopee-coins-setup.py` and complete login process
-4. Close `source/get-shopee-coins-setup.py` when you see '_Setup completed successfully_'
-### Get coins! (With 2 options)
-1. Run `source/get-shopee-coins.pyw` to get coins
-2. Use Windows Task Scheduler to run `source/get-shopee-coins.pyw` periodically
-    <img src="./media/task-scheduler-1.png" width="500">
-    <img src="./media/task-scheduler-2.png" width="500">
+1. Install selenium and pycryptodome. (Using [requirements.bat](./requirements.bat) or *pip*)
+2. Put [chromedriver.exe](https://chromedriver.chromium.org/downloads) under the home path. (e.g., C:\Users\User)
+3. Run `source/get-shopee-coins.pyw` and complete login process.
 
-*Note: ChromeDriver's version should be the same as Chrome's version*
+### Get coins! (With 2 options)
+&nbsp;&nbsp;&nbsp;&nbsp;Option 1. Run `source/get-shopee-coins.pyw` to get coins. \
+&nbsp;&nbsp;&nbsp;&nbsp;Option 2. Use `Windows Task Scheduler` to run `source/get-shopee-coins.pyw` periodically. \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./media/task-scheduler-1.png" width="500"> \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./media/task-scheduler-2.png" width="500">
+    
+### Insert users
+1. In home/GSC/users.txt, enter new line and new username.
+2. Run `source/get-shopee-coins.pyw` and complete login process.
+
+### Notes
+1. ChromeDriver's version should be the same as Chrome's version.
+2. Do NOT refresh or go to previous page during login process. If you do, restart the program.
+3. If you changed your password, delete home/GSC/credentials-username and complete login process.
+
+# Disclaimer
+**Your login credentials is stored in home/GSC/credentials-username and encrypted using AES.** \
+**We use it to help you re-login after cookies expired. We do NOT steal any infomation about it or use it for any other purpose.**
 
 # Test Environment
 + Windows 10
@@ -21,6 +32,7 @@ Get your shoppe coins easily and automatedly!:money_mouth_face::money_mouth_face
 
 # Package Requirements
 + selenium==4.0.0
++ pycryptodome==3.12.0
 
 # License
 This project is under the [MIT License](./LICENSE).
