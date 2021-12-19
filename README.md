@@ -9,7 +9,7 @@ Get your shoppe coins easily and automatically!:money_mouth_face::money_mouth_fa
 
 ### Get coins! (With 2 options)
 &nbsp;&nbsp;&nbsp;&nbsp;Option 1. Run `source/get-shopee-coins.pyw` to get coins. \
-&nbsp;&nbsp;&nbsp;&nbsp;Option 2. Use `Windows Task Scheduler` to run `source/get-shopee-coins.pyw` periodically. \
+&nbsp;&nbsp;&nbsp;&nbsp;Option 2. Use Windows Task Scheduler to run `source/get-shopee-coins.pyw` periodically. \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./media/task-scheduler-1.png" width="500"> \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="./media/task-scheduler-2.png" width="500">
     
@@ -19,12 +19,13 @@ Get your shoppe coins easily and automatically!:money_mouth_face::money_mouth_fa
 
 ### Notes
 1. ChromeDriver's version should be the same as Chrome's version.
-2. Do NOT refresh or go to previous page during login process. If you do, restart the program.
-3. If you changed your password, delete home/GSC/credentials-username and complete login process.
+2. You can check the title of login page to know which user you login to.
+3. Do NOT refresh or go to previous page during login process. If you do, restart the program.
+4. If you changed your password, delete home/GSC/credentials-username and complete login process.
 
 # Disclaimer
 **Your login credentials is stored in home/GSC/credentials-username and encrypted using AES.** \
-**We use it to help you re-login after cookies expired. We do NOT steal any infomation about it or use it for any other purpose.**
+**We use it to re-login after cookies expired. We do NOT steal any info about it or use it for any other purpose.**
 
 # Test Environment
 + Windows 10
