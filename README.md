@@ -1,5 +1,5 @@
 # :moneybag:Get Shopee Coins:moneybag:
-Get your shoppe coins easily and automatically!:money_mouth_face::money_mouth_face::money_mouth_face:
+Get your shopee coins easily and automatically!:money_mouth_face::money_mouth_face::money_mouth_face:
 
 # Usage
 ### Setup
