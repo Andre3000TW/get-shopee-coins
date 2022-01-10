@@ -3,7 +3,7 @@ Get your shopee coins easily and automatically!:money_mouth_face::money_mouth_fa
 
 # Usage
 ### Setup
-1. Install selenium and pycryptodome. (Using [requirements.bat](./requirements.bat) or *pip*)
+1. Install selenium, requests, and pycryptodome. (Using [requirements.bat](./requirements.bat) or *pip*)
 2. Put [chromedriver.exe](https://chromedriver.chromium.org/downloads) under the home path. (e.g., C:\Users\User)
 3. Run `source/get-shopee-coins.pyw` and complete login process.
 
