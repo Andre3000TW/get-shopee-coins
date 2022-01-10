@@ -20,7 +20,7 @@ Get your shopee coins easily and automatically!:money_mouth_face::money_mouth_fa
 ### Notes
 1. ChromeDriver's version should be the same as Chrome's version.
 2. You can check the title of login page to know which user you login to.
-3. Do NOT refresh or go to previous page during login process. If you do, restart the program.
+3. Do NOT refresh or go to previous page during login process. If you did, restart the program.
 4. If you changed your password, delete home/GSC/credentials-username and complete login process.
 
 # Disclaimer
@@ -32,7 +32,8 @@ Get your shopee coins easily and automatically!:money_mouth_face::money_mouth_fa
 + Python 3.9.0
 
 # Package Requirements
-+ selenium==4.0.0
++ selenium==4.1.0
++ requests==2.26.0
 + pycryptodome==3.12.0
 
 # License
