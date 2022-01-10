@@ -1,14 +1,16 @@
 import os
-import time
+import json
 import pickle
+import logging
+import requests
 import traceback
 from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
-from selenium.common.exceptions import TimeoutException
 import binascii
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
@@ -71,12 +73,11 @@ class Chrome():
         return WebDriverWait(self.driver, timeout).until(expected_conditions.presence_of_element_located(locator))
     # end waitUntilElementIsLocated()
 
-    def waitUntilElementIsClickable(self, locator, timeout):
-        return WebDriverWait(self.driver, timeout).until(expected_conditions.element_to_be_clickable(locator))
-    # end waitUntilElementIsClickable()
-
     def loadCookies(self, user):
-        for cookie in pickle.load(open(path.cookies + user, 'rb')): self.driver.add_cookie(cookie)
+        for cookie in pickle.load(open(path.cookies + user, 'rb')): 
+            self.driver.add_cookie(cookie)
+        # end for
+
         self.driver.refresh()
     # end loadCookies()
 
@@ -151,12 +152,15 @@ class Chrome():
 class Shopee():
     def __init__(self):
         self.chrome = Chrome()
-        self.xpath = {
-            'username_input': '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[2]/div[1]/input',
-            'password_input': '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[3]/div[1]/input',
-            'login_button': '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/button',
-            'navbar_username': '//*[@id="main"]/div/div[2]/div[1]/div[1]/div/ul/li[3]/div/div/div/div[2]',
-            'gsc_button': '//*[@id="main"]/div/div[3]/div/main/section[1]/div[1]/div/section/div/button'
+        self.url = {
+            'login-page': 'https://shopee.tw/buyer/login',
+            'check-if-user-has-logged-in': 'https://shopee.tw/api/v2/user/account_info',
+            'get-shopee-coins': 'https://shopee.tw/mkt/coins/api/v2/checkin_new'
+        }
+        self.locator = {
+            'username-input': (By.XPATH, '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[2]/div[1]/input'),
+            'password-input': (By.XPATH, '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[3]/div[1]/input'),
+            'navbar-username': (By.CLASS_NAME, 'navbar__username')
         }
 
         # load users from users file
@@ -182,40 +186,47 @@ class Shopee():
     # end hasCookies()
 
     def hasNotLoggedIn(self, user):
-        if not self.hasCookies(user): return True
+        if not self.hasCookies(user):
+            logging.info(f'User[{user}] has NOT logged in. (No cookies)')
+            return True
+        # end if
 
-        try:
-            is_timeout = False
-            self.chrome.open('headless', 'https://shopee.tw')
-            self.chrome.loadCookies(user)
-            self.chrome.waitUntilElementIsLocated((By.XPATH, self.xpath['navbar_username']), 3)
-        except TimeoutException:
-            is_timeout = True
-        finally:
-            self.chrome.close()
-            return is_timeout
+        cookies = {}
+        for cookie in pickle.load(open(path.cookies + user, 'rb')): cookies[cookie['name']] = cookie['value']
+        res = json.loads(requests.get(self.url['check-if-user-has-logged-in'], cookies=cookies).text)
+
+        if res['error'] != 0: 
+            logging.info(f'User[{user}] has NOT logged in. (Cookies expired)')
+            return True
+        else:
+            logging.info(f'User[{user}] has already logged in.')
+            return False
+        # end if-else
     # end hasNotLoggedIn()
 
     def login(self, user):
-        if self.hasCookies(user) and self.hasCredentials(user):
-            self.chrome.open('headless', 'https://shopee.tw/buyer/login')
-            self.chrome.loadCookies(user)
+        if self.hasCookies(user) and self.hasCredentials(user): # login automatically
+            logging.info(f'User[{user}] tried to login automatically.')
 
+            self.chrome.open('headless', self.url['login-page'])
+            self.chrome.loadCookies(user)
+            
             # using user credentials to login automatically
             username, password = self.chrome.loadCredentials(user)
-            self.chrome.waitUntilElementIsLocated((By.XPATH, self.xpath['username_input']), 30).send_keys(username)
-            self.chrome.waitUntilElementIsLocated((By.XPATH, self.xpath['password_input']), 30).send_keys(password)
-            self.chrome.waitUntilElementIsClickable((By.XPATH, self.xpath['login_button']), 30).click()
-            self.chrome.waitUntilElementIsLocated((By.XPATH, self.xpath['navbar_username']), 600)
+            self.chrome.waitUntilElementIsLocated(self.locator['username-input'], 30).send_keys(username)
+            self.chrome.waitUntilElementIsLocated(self.locator['password-input'], 30).send_keys(password + Keys.ENTER)
+            self.chrome.waitUntilElementIsLocated(self.locator['navbar-username'], 600)
 
             # save cookies
             self.chrome.saveCookies(user)
-        else:
-            self.chrome.open('start-maximized', 'https://shopee.tw/buyer/login')
+        else: # let user login manually => only need to be done 1 time for a single user
+            logging.info(f'User[{user}] tried to login manually.')
 
-            # wait until login successfully
+            self.chrome.open('start-maximized', self.url['login-page'])
+
+            # wait until the login process is over
             self.chrome.setupLoginPage(user)
-            self.chrome.waitUntilElementIsLocated((By.XPATH, self.xpath['navbar_username']), 600)
+            self.chrome.waitUntilElementIsLocated(self.locator['navbar-username'], 600)
             
             # save cookies & credentials
             self.chrome.saveCookies(user)
@@ -226,25 +237,23 @@ class Shopee():
         # end if-else
 
         self.chrome.close()
+
+        logging.info(f'User[{user}] has logged in successfully.')
     # end login()
 
     def getCoins(self, user):
-        self.chrome.open('headless', 'https://shopee.tw/shopee-coins')
-        self.chrome.loadCookies(user)
-        
-        # get coins
-        time.sleep(3) # to avoid page redirect
-        self.chrome.waitUntilElementIsClickable((By.XPATH, self.xpath['gsc_button']), 30).click()
+        cookies = {}
+        for cookie in pickle.load(open(path.cookies + user, 'rb')): cookies[cookie['name']] = cookie['value']
+        res = json.loads(requests.post(self.url['get-shopee-coins'], cookies=cookies).text)
 
-        self.chrome.close()
+        if res['data']['success'] == True: logging.info(f'User[{user}] got the coins.')
+        else: logging.info(f'User[{user}] already got the coins. (Or failed to)')
     # end getCoins()
 
     def getCoinsForEveryUser(self):
         for user in self.users:
-            # login if user has NOT logged in yet
             if self.hasNotLoggedIn(user): self.login(user)
 
-            # get coins
             self.getCoins(user)
         # end for
     # end getCoinsForEveryUser()
@@ -266,7 +275,7 @@ class PathManager():
         self.cookies = self.gsc + r'\cookies-'
         self.credentials = self.gsc + r'\credentials-'
         self.users = self.gsc + r'\users.txt'
-        self.error_log = self.gsc + r'\error-log.txt'
+        self.gsc_log = self.gsc + r'\gsc-log.txt'
 
         # GSC dir/users file init
         Path(self.gsc).mkdir(exist_ok=True)
@@ -274,14 +283,14 @@ class PathManager():
     # end __init__()
 # end class PathManager
 
-try:
-    path = PathManager()
-    shopee = Shopee()
-    shopee.getCoinsForEveryUser()
-except Exception as e:
-    with open(path.error_log, 'a') as log:
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        log.write(f'{current_time}\n{traceback.format_exc()}')
-    # end with-as
-finally:
-    shopee.clean()
+if __name__ == '__main__':   
+    try:
+        path = PathManager()
+        logging.basicConfig(filename=path.gsc_log, level=logging.INFO, datefmt='%Y/%m/%d %H:%M:%S', format='%(asctime)s-%(levelname)s\n%(message)s')
+        shopee = Shopee()
+        shopee.getCoinsForEveryUser()
+    except Exception: 
+        logging.error(traceback.format_exc())
+    finally: 
+        shopee.clean()
+# end if
