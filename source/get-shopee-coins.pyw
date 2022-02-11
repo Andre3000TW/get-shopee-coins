@@ -261,6 +261,7 @@ class Shopee():
             self.chrome.open('start-maximized', self.url['login-page'])
 
             # wait until the login process is over
+            self.chrome.waitUntilElementIsLocated(self.locator['username-input'], 30)
             self.chrome.setupLoginPage(user)
             self.chrome.waitUntilElementIsLocated(self.locator['navbar-username'], 600)
             
