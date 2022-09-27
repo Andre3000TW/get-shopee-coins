@@ -5,6 +5,9 @@ import logging
 import requests
 import traceback
 from pathlib import Path
+from io import BytesIO
+from zipfile import ZipFile
+from subprocess import Popen, PIPE
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -51,7 +54,40 @@ class Chrome():
         self.service = Service(path.chrome_driver)
         self.driver = None
         self.cryptor = Cryptor()
+        self.getLatestChromedriver()
     # end __init__()
+
+    def hasChromedriver(self):
+        return os.path.isfile(path.chrome_driver)
+    # end hasChromedriver()
+
+    def getMajorBrowserVersion(self): # get current major Chrome browser version
+        command = 'reg query "HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon" /v "version"'
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        stdout, _ = process.communicate()
+        process.terminate()
+
+        return stdout.decode().split()[-1].split('.')[0]
+    # end getMajorBrowserVersion()
+
+    def getMajorDriverVersion(self): # get current major Chrome driver version
+        command = f'{path.gsc}\chromedriver.exe -v'
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        stdout, _ = process.communicate()
+        process.terminate()
+
+        return stdout.decode().split()[1].split('.')[0]
+    # end getMajorDriverVersion()
+
+    def getLatestChromedriver(self): # when driver doesnt exist OR driver too old
+        if not self.hasChromedriver() or self.getMajorBrowserVersion() != self.getMajorDriverVersion(): 
+            # get latest driver version of Chrome
+            latest_driver_version = requests.get(f'https://chromedriver.storage.googleapis.com/LATEST_RELEASE_{self.getMajorBrowserVersion()}').text
+            data = requests.get(f'https://chromedriver.storage.googleapis.com/{latest_driver_version}/chromedriver_win32.zip').content
+            ZipFile(BytesIO(data)).extractall(path.gsc)
+            logging.info(f'chromedriver.exe has been updated/downloaded')
+        # end if
+    # end getLatestChromedriver()
 
     def open(self, mode, url):
         self.options = webdriver.ChromeOptions()
@@ -104,14 +140,14 @@ class Chrome():
 
     def setupLoginPage(self, user):
         self.driver.execute_script(f'document.title = "Login Page for User[{user}]"')
-        self.driver.execute_script('username = document.querySelector("#main > div > div._1229NB > div > div > form > div > div._3e4zDA > div._3nZHpB > div._3mizNj > input")\n\
-                                    password = document.querySelector("#main > div > div._1229NB > div > div > form > div > div._3e4zDA > div._35M4-Y > div._3mizNj > input")\n\
+        self.driver.execute_script('username = document.getElementsByName("loginKey")[0]\n\
+                                    password = document.getElementsByName("password")[0]\n\
+                                    login_button = password.parentElement.parentElement.nextSibling\n\
                                     div = document.createElement("div")\n\
                                     div.id = "GSC"\n\
-                                    parent = document.querySelector("#main > div > div._1229NB > div > div > form > div > div._3e4zDA")\n\
-                                    child = document.querySelector("#main > div > div._1229NB > div > div > form > div > div._3e4zDA > div._1upyIZ")\n\
-                                    login_button = document.querySelector("#main > div > div._1229NB > div > div > form > div > div._3e4zDA > button")\n\
-                                    parent.insertBefore(div, child)\n\
+                                    reference_node = login_button.nextSibling\n\
+                                    parent = reference_node.parentElement\n\
+                                    parent.insertBefore(div, reference_node)\n\
                                     div.appendChild(login_button)\n\
                                     div.addEventListener("click", () => {\n\
                                         localStorage.setItem("un", username.value)\n\
@@ -225,6 +261,7 @@ class Shopee():
             self.chrome.open('start-maximized', self.url['login-page'])
 
             # wait until the login process is over
+            self.chrome.waitUntilElementIsLocated(self.locator['username-input'], 30)
             self.chrome.setupLoginPage(user)
             self.chrome.waitUntilElementIsLocated(self.locator['navbar-username'], 600)
             
@@ -262,13 +299,10 @@ class Shopee():
 class PathManager():
     def __init__(self):
         # path of home directory
-        self.home = str(Path.home())
-
-        # file in home directory
-        self.chrome_driver = self.home + r'\chromedriver.exe'
+        self.documents = str(Path.home()) + r'\Documents'
 
         # path of GSC directory
-        self.gsc = self.home + r'\GSC'
+        self.gsc = self.documents + r'\GSC'
 
         # files in GSC directory
         self.key = self.gsc + r'\key'
@@ -276,6 +310,7 @@ class PathManager():
         self.credentials = self.gsc + r'\credentials-'
         self.users = self.gsc + r'\users.txt'
         self.gsc_log = self.gsc + r'\gsc-log.txt'
+        self.chrome_driver = self.gsc + r'\chromedriver.exe'
 
         # GSC dir/users file init
         Path(self.gsc).mkdir(exist_ok=True)
