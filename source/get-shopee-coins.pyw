@@ -194,8 +194,8 @@ class Shopee():
             'get-shopee-coins': 'https://shopee.tw/mkt/coins/api/v2/checkin_new'
         }
         self.locator = {
-            'username-input': (By.XPATH, '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[2]/div[1]/input'),
-            'password-input': (By.XPATH, '//*[@id="main"]/div/div[2]/div/div/form/div/div[2]/div[3]/div[1]/input'),
+            'username-input': (By.NAME, 'loginKey'),
+            'password-input': (By.NAME, 'password'),
             'navbar-username': (By.CLASS_NAME, 'navbar__username')
         }
 
